@@ -25,35 +25,15 @@ def shoot(board, row, col):
 def ai_shot(board):
     global ai_targets
 
-    #target mode
-    if ai_targets:
+    # 🎯 TARGET MODE
+    while ai_targets:
         row, col = ai_targets.pop(0)
-        
-        if board[row][col] not in ["X", "O"]:
-            result = shoot(board, row, col)
-            if result == "hit":
-                neighbors = [
-                    (row-1, col),
-                    (row+1, col),
-                    (row, col-1),
-                    (row, col+1)
-                ]
 
-                for r, c in neighbors:
-                    if 0 <= r < ROWS and 0 <= c < COLS:
-                        if board[r][c] not in ["X", "O"]:
-                            ai_targets.append((r, c))
-        return result
-    
+        if board[row][col] in ["X", "O"]:
+            continue  # skip already used cells
 
-    # hunt mode
-    while True:
-        row = random.randint(0, ROWS - 1)
-        col = random.randint(0, COLS - 1)
+        result = shoot(board, row, col)
 
-        if board[row][col] not in ["X", "O"]:
-            return shoot(board, row, col)
-        
         if result == "hit":
             neighbors = [
                 (row-1, col),
@@ -64,11 +44,36 @@ def ai_shot(board):
 
             for r, c in neighbors:
                 if 0 <= r < ROWS and 0 <= c < COLS:
-                    ai_targets.append((r, c))
+                    if board[r][c] not in ["X", "O"] and (r, c) not in ai_targets:
+                        ai_targets.append((r, c))
+
+        return result
+
+    # 🔍 HUNT MODE
+    while True:
+        row = random.randint(0, ROWS - 1)
+        col = random.randint(0, COLS - 1)
+
+        if board[row][col] not in ["X", "O"]:
+            result = shoot(board, row, col)
+
+            if result == "hit":
+                neighbors = [
+                    (row-1, col),
+                    (row+1, col),
+                    (row, col-1),
+                    (row, col+1)
+                ]
+
+                for r, c in neighbors:
+                    if 0 <= r < ROWS and 0 <= c < COLS:
+                        if (r, c) not in ai_targets:
+                            ai_targets.append((r, c))
+
             return result
         
 
-        
+
 def check_win(board):
     for row in board:
         if "S" in row:
