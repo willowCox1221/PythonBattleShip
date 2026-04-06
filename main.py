@@ -23,11 +23,51 @@ def shoot(board, row, col):
     return "Already shot here"  # Already shot here
 
 def ai_shot(board):
+    global ai_targets
+
+    #target mode
+    if ai_targets:
+        row, col = ai_targets.pop(0)
+        
+        if board[row][col] not in ["X", "O"]:
+            result = shoot(board, row, col)
+            if result == "hit":
+                neighbors = [
+                    (row-1, col),
+                    (row+1, col),
+                    (row, col-1),
+                    (row, col+1)
+                ]
+
+                for r, c in neighbors:
+                    if 0 <= r < ROWS and 0 <= c < COLS:
+                        if board[r][c] not in ["X", "O"]:
+                            ai_targets.append((r, c))
+        return result
+    
+
+    # hunt mode
     while True:
-        row = random.randint(0, 9)
-        col = random.randint(0, 9)
-        if board[row][col] in ["~", "S"]:
+        row = random.randint(0, ROWS - 1)
+        col = random.randint(0, COLS - 1)
+
+        if board[row][col] not in ["X", "O"]:
             return shoot(board, row, col)
+        
+        if result == "hit":
+            neighbors = [
+                (row-1, col),
+                (row+1, col),
+                (row, col-1),
+                (row, col+1)
+            ]
+
+            for r, c in neighbors:
+                if 0 <= r < ROWS and 0 <= c < COLS:
+                    ai_targets.append((r, c))
+            return result
+        
+
         
 def check_win(board):
     for row in board:
@@ -99,11 +139,20 @@ for size in ships:
 # Main game loop
 running = True
 player_turn = True
+ai_targets = []  # List to store AI's target coordinates
+ai_hits = []  # List to store AI's successful hits
+font = pygame.font.SysFont(None, 36)
+
+
 while running:
     screen.fill((0, 0, 0))
 
     draw_grid(50, player_board, True)  # Player's grid
     draw_grid(450, opponent_board, False)  # Opponent's grid
+    turn_text = "Player's Turn" if player_turn else "AI's Turn"
+    text_surface = font.render(turn_text, True, (255, 255, 255))
+    screen.blit(text_surface, (350, 500))
+
 
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -134,7 +183,7 @@ while running:
                 running = False
             player_turn = True  # AI's turn ends after shooting
 
-            
+
         if event.type == pygame.QUIT:
             running = False
 
